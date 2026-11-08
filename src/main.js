@@ -72,6 +72,12 @@ function isIslandCell(x, z) {
   if (z <= -14 && x <= -17 + (z + 16) * 2) return false;
   return true;
 }
+// Batch repeated terrain cubes into InstancedMeshes to reduce draw calls.
+const terrainItems = new Map();
+const addTerrain = (mat, x, y, z, sx, sy, sz) => {
+  if (!terrainItems.has(mat)) terrainItems.set(mat, []);
+  terrainItems.get(mat).push([x, y, z, sx, sy, sz]);
+};
 for (let x = X_MIN; x <= X_MAX; x++) {
   for (let z = Z_MIN; z <= Z_MAX; z++) {
     if (!isIslandCell(x, z)) continue;
@@ -81,22 +87,35 @@ for (let x = X_MIN; x <= X_MAX; x++) {
       !isIslandCell(x - 1, z) || !isIslandCell(x + 1, z) ||
       !isIslandCell(x, z - 1) || !isIslandCell(x, z + 1);
     const topMat = ((x * 3 + z * 5) % 11 === 0) ? M.grassLight : (edge ? M.grassDark : M.grass);
-    block(island, wx, -0.02, wz, VOXEL, 0.18, VOXEL, topMat);
+    addTerrain(topMat, wx, -0.02, wz, VOXEL, 0.18, VOXEL);
     const soilMat = ((x * 7 + z * 3) % 5 === 0) ? M.soilDark : M.soil;
-    block(island, wx, -0.23, wz, VOXEL, 0.24, VOXEL, soilMat);
+    addTerrain(soilMat, wx, -0.23, wz, VOXEL, 0.24, VOXEL);
   }
 }
-// Irregular floating soil fragments beneath the front and side perimeter.
 for (let x = X_MIN + 1; x < X_MAX; x++) {
   for (let z = Z_MIN + 1; z < Z_MAX; z++) {
     const edgeDistance = Math.min(x - X_MIN, X_MAX - x, z - Z_MIN, Z_MAX - z);
-    if (edgeDistance > 3) continue;
-    if (!isIslandCell(x, z)) continue;
+    if (edgeDistance > 3 || !isIslandCell(x, z)) continue;
     const hash = Math.abs((x * 17 + z * 29 + x * z * 3) % 7);
     if (hash < 3) continue;
     const depth = hash === 6 ? 0.42 : 0.30;
-    block(island, x * VOXEL, -0.48 - depth * 0.18, z * VOXEL, 0.27, depth, 0.27, hash % 2 ? M.soilDark : M.soilShade);
+    addTerrain(hash % 2 ? M.soilDark : M.soilShade, x * VOXEL, -0.48 - depth * 0.18, z * VOXEL, 0.27, depth, 0.27);
   }
+}
+const terrainDummy = new THREE.Object3D();
+for (const [mat, items] of terrainItems) {
+  const batch = new THREE.InstancedMesh(cube, mat, items.length);
+  batch.castShadow = true;
+  batch.receiveShadow = true;
+  items.forEach(([x, y, z, sx, sy, sz], index) => {
+    terrainDummy.position.set(x, y, z);
+    terrainDummy.scale.set(sx, sy, sz);
+    terrainDummy.updateMatrix();
+    batch.setMatrixAt(index, terrainDummy.matrix);
+  });
+  batch.instanceMatrix.needsUpdate = true;
+  batch.computeBoundingSphere();
+  island.add(batch);
 }
 // Rounded apple tree with a thick trunk and a stepped spherical canopy.
 function makeTree(x,z,scale=1) {

@@ -1,99 +1,190 @@
 {
   "source": {
-    "file": "user reference image 1",
-    "width_px": 1536,
-    "height_px": 691,
-    "note": "First-pass manual screen-space estimates. Bounding boxes include visible silhouettes and should be refined with masks."
-  },
-  "composition": {
-    "scene_region_px": [
+    "filename": "1000025453.png (uploaded target screenshot)",
+    "dimensions_px": [
+      1536,
+      691
+    ],
+    "game_viewport_crop_px": [
       250,
       0,
       1286,
-      690
+      691
     ],
-    "island_bbox_px": [
-      389,
-      38,
-      1164,
+    "viewport_dimensions_px": [
+      1036,
+      691
+    ],
+    "viewport_aspect_ratio": 1.4993,
+    "caveat": "Phone status/navigation overlays and black side bars are not part of the scene. Compare only the central game viewport."
+  },
+  "projection": {
+    "target": "orthographic / near-orthographic isometric voxel diorama",
+    "island_top_landmarks_px": {
+      "back": [
+        802,
+        284
+      ],
+      "left": [
+        389,
+        410
+      ],
+      "right": [
+        1163,
+        389
+      ],
+      "front": [
+        802,
+        625
+      ]
+    },
+    "front_soil_lowest_px": [
+      801,
       647
     ],
-    "island_visual_center_px": [
-      776,
-      343
-    ],
-    "projection": "orthographic isometric; two visible front-facing side planes; square world footprint"
+    "projected_edge_vectors_px": {
+      "back_to_right": [
+        361,
+        105
+      ],
+      "back_to_left": [
+        -413,
+        126
+      ]
+    },
+    "camera_observations": [
+      "Large visible top surface; camera is not a shallow 10–15 degree view.",
+      "Projected edge slopes are approximately +0.29 and -0.31; current prototype is visibly too steep.",
+      "Island fills about 75% of viewport width and 53% of viewport height including soil underside.",
+      "Calibrate orthographic camera azimuth/elevation from island edges before placing props."
+    ]
   },
   "objects": {
+    "island": {
+      "bbox_px": [
+        389,
+        284,
+        1164,
+        647
+      ],
+      "center_px": [
+        776.5,
+        465.5
+      ]
+    },
     "tree": {
       "bbox_px": [
         444,
         72,
-        709,
+        710,
         380
       ],
       "center_px": [
-        576,
+        577,
         226
       ],
-      "relative_role": "rear-left; canopy dominant"
+      "parts": {
+        "canopy": [
+          444,
+          72,
+          710,
+          274
+        ],
+        "trunk": [
+          535,
+          255,
+          631,
+          380
+        ]
+      },
+      "relative_scale": "Canopy width ~266 px; full tree height ~308 px."
     },
     "house": {
       "bbox_px": [
         824,
-        137,
-        1101,
-        446
+        65,
+        1100,
+        445
       ],
       "center_px": [
-        963,
-        291
+        962,
+        255
       ],
-      "relative_role": "rear-right"
+      "parts": {
+        "roof_and_chimney": [
+          824,
+          65,
+          1100,
+          312
+        ],
+        "walls": [
+          847,
+          218,
+          1083,
+          414
+        ],
+        "door": [
+          875,
+          300,
+          939,
+          414
+        ],
+        "visible_side_window": [
+          1006,
+          311,
+          1050,
+          371
+        ]
+      }
     },
     "cat": {
       "bbox_px": [
-        657,
-        402,
-        774,
-        510
+        653,
+        391,
+        773,
+        511
       ],
       "center_px": [
-        716,
-        456
+        713,
+        451
       ],
-      "relative_role": "front-center"
+      "note": "White voxel cat facing viewer; ears and paws included."
     },
     "fish": {
       "bbox_px": [
         704,
-        251,
-        814,
+        220,
+        815,
         355
       ],
       "center_px": [
-        759,
-        303
+        759.5,
+        287.5
       ],
-      "relative_role": "floating between tree and house"
+      "note": "Floating yellow-orange fish between tree and house."
     },
     "fence": {
       "bbox_px": [
-        987,
-        376,
+        986,
+        375,
         1083,
-        445
-      ],
-      "center_px": [
-        1035,
-        410
+        444
       ]
+    },
+    "path": {
+      "bbox_px": [
+        731,
+        388,
+        884,
+        471
+      ],
+      "note": "Pale stepping stones from cottage door toward foreground."
     },
     "clouds": [
       {
         "bbox_px": [
           288,
-          44,
+          43,
           455,
           163
         ]
@@ -109,103 +200,136 @@
       {
         "bbox_px": [
           1121,
-          95,
+          96,
           1216,
           159
         ]
       }
-    ]
-  },
-  "island_landmarks_px": {
-    "top_back_edge_estimate": [
-      802,
-      284
     ],
-    "leftmost_edge_estimate": [
-      389,
-      411
-    ],
-    "rightmost_edge_estimate": [
-      1164,
-      390
-    ],
-    "frontmost_edge_estimate": [
-      801,
-      647
-    ]
+    "chimney_smoke": {
+      "bbox_px": [
+        991,
+        65,
+        1051,
+        155
+      ],
+      "note": "Cream voxel puffs above chimney."
+    }
   },
   "palette_samples": {
-    "note": "Single-pixel probes only; some coordinates land on shaded faces, reflections, or antialiasing. Use as rough observed samples, not canonical material colors.",
-    "samples": {
-      "sky": {
+    "note": "RGB probes from screenshot; lighting and shadows shift observed pixels. Use as anchors, then derive base material colors from several unshadowed patches.",
+    "probes": {
+      "sky_bright": {
         "xy": [
-          900,
-          100
+          1000,
+          60
         ],
-        "hex": "#7FC4FF"
+        "hex": "#77C1FE"
       },
-      "soil_side": {
+      "sky_horizon": {
         "xy": [
-          410,
-          445
+          400,
+          250
         ],
-        "hex": "#805A36"
+        "hex": "#A6D8FB"
       },
-      "soil_deep_shadow": {
+      "grass_sunlit": {
         "xy": [
-          765,
-          625
+          830,
+          480
         ],
-        "hex": "#3E2810"
+        "hex": "#AABF48"
       },
-      "foliage_mid": {
+      "grass_shaded": {
         "xy": [
-          550,
+          800,
+          550
+        ],
+        "hex": "#557216"
+      },
+      "canopy_mid": {
+        "xy": [
+          570,
           180
         ],
-        "hex": "#7A9628"
+        "hex": "#3C5712"
       },
-      "foliage_lit": {
+      "canopy_highlight": {
         "xy": [
-          560,
-          100
+          600,
+          120
         ],
-        "hex": "#BACF58"
+        "hex": "#99B137"
       },
-      "trunk_shade": {
+      "canopy_shadow": {
         "xy": [
-          575,
-          320
+          650,
+          220
         ],
-        "hex": "#653B15"
+        "hex": "#5F731C"
       },
-      "house_wall_shade": {
+      "bark_shade": {
         "xy": [
-          930,
-          310
+          580,
+          300
         ],
-        "hex": "#D5B896"
+        "hex": "#442508"
       },
-      "roof_blue": {
+      "soil_front_shade": {
         "xy": [
-          970,
-          200
+          780,
+          615
         ],
-        "hex": "#3B66C2"
+        "hex": "#603F20"
       },
-      "door_shade": {
+      "soil_left": {
+        "xy": [
+          400,
+          445
+        ],
+        "hex": "#704D2D"
+      },
+      "wall_shade": {
+        "xy": [
+          960,
+          300
+        ],
+        "hex": "#BEB08D"
+      },
+      "wall_light": {
+        "xy": [
+          1000,
+          350
+        ],
+        "hex": "#E7CFAD"
+      },
+      "roof_light": {
+        "xy": [
+          960,
+          180
+        ],
+        "hex": "#6694F4"
+      },
+      "roof_mid": {
+        "xy": [
+          1040,
+          230
+        ],
+        "hex": "#5987E9"
+      },
+      "door_detail": {
         "xy": [
           900,
-          365
+          350
         ],
-        "hex": "#552E0F"
+        "hex": "#9B7220"
       },
       "fish_gold": {
         "xy": [
-          745,
+          750,
           300
         ],
-        "hex": "#F7B52B"
+        "hex": "#FFC233"
       },
       "apple_red": {
         "xy": [
@@ -214,18 +338,19 @@
         ],
         "hex": "#FA6D51"
       },
-      "cloud_shade": {
+      "cloud": {
         "xy": [
-          375,
-          95
+          380,
+          100
         ],
-        "hex": "#EAEAEA"
+        "hex": "#F8F8F8"
       }
     }
   },
-  "next": [
-    "Create object masks and refine bounding boxes from pixel regions.",
-    "Sample multiple interior pixels per material region and use median RGB/HSV.",
-    "Map screen-space landmarks to the chosen isometric world grid after camera calibration."
+  "next_measurement_tasks": [
+    "Trace exact object masks and refine bounding boxes.",
+    "Take median RGB samples from multiple unshadowed patches per material.",
+    "Determine camera azimuth/elevation from four island corner landmarks.",
+    "Render at 1036x691 and compare only viewport crop."
   ]
 }

@@ -1,0 +1,231 @@
+{
+  "source": {
+    "file": "user reference image 1",
+    "width_px": 1536,
+    "height_px": 691,
+    "note": "First-pass manual screen-space estimates. Bounding boxes include visible silhouettes and should be refined with masks."
+  },
+  "composition": {
+    "scene_region_px": [
+      250,
+      0,
+      1286,
+      690
+    ],
+    "island_bbox_px": [
+      389,
+      38,
+      1164,
+      647
+    ],
+    "island_visual_center_px": [
+      776,
+      343
+    ],
+    "projection": "orthographic isometric; two visible front-facing side planes; square world footprint"
+  },
+  "objects": {
+    "tree": {
+      "bbox_px": [
+        444,
+        72,
+        709,
+        380
+      ],
+      "center_px": [
+        576,
+        226
+      ],
+      "relative_role": "rear-left; canopy dominant"
+    },
+    "house": {
+      "bbox_px": [
+        824,
+        137,
+        1101,
+        446
+      ],
+      "center_px": [
+        963,
+        291
+      ],
+      "relative_role": "rear-right"
+    },
+    "cat": {
+      "bbox_px": [
+        657,
+        402,
+        774,
+        510
+      ],
+      "center_px": [
+        716,
+        456
+      ],
+      "relative_role": "front-center"
+    },
+    "fish": {
+      "bbox_px": [
+        704,
+        251,
+        814,
+        355
+      ],
+      "center_px": [
+        759,
+        303
+      ],
+      "relative_role": "floating between tree and house"
+    },
+    "fence": {
+      "bbox_px": [
+        987,
+        376,
+        1083,
+        445
+      ],
+      "center_px": [
+        1035,
+        410
+      ]
+    },
+    "clouds": [
+      {
+        "bbox_px": [
+          288,
+          44,
+          455,
+          163
+        ]
+      },
+      {
+        "bbox_px": [
+          722,
+          38,
+          858,
+          125
+        ]
+      },
+      {
+        "bbox_px": [
+          1121,
+          95,
+          1216,
+          159
+        ]
+      }
+    ]
+  },
+  "island_landmarks_px": {
+    "top_back_edge_estimate": [
+      802,
+      284
+    ],
+    "leftmost_edge_estimate": [
+      389,
+      411
+    ],
+    "rightmost_edge_estimate": [
+      1164,
+      390
+    ],
+    "frontmost_edge_estimate": [
+      801,
+      647
+    ]
+  },
+  "palette_samples": {
+    "note": "Single-pixel probes only; some coordinates land on shaded faces, reflections, or antialiasing. Use as rough observed samples, not canonical material colors.",
+    "samples": {
+      "sky": {
+        "xy": [
+          900,
+          100
+        ],
+        "hex": "#7FC4FF"
+      },
+      "soil_side": {
+        "xy": [
+          410,
+          445
+        ],
+        "hex": "#805A36"
+      },
+      "soil_deep_shadow": {
+        "xy": [
+          765,
+          625
+        ],
+        "hex": "#3E2810"
+      },
+      "foliage_mid": {
+        "xy": [
+          550,
+          180
+        ],
+        "hex": "#7A9628"
+      },
+      "foliage_lit": {
+        "xy": [
+          560,
+          100
+        ],
+        "hex": "#BACF58"
+      },
+      "trunk_shade": {
+        "xy": [
+          575,
+          320
+        ],
+        "hex": "#653B15"
+      },
+      "house_wall_shade": {
+        "xy": [
+          930,
+          310
+        ],
+        "hex": "#D5B896"
+      },
+      "roof_blue": {
+        "xy": [
+          970,
+          200
+        ],
+        "hex": "#3B66C2"
+      },
+      "door_shade": {
+        "xy": [
+          900,
+          365
+        ],
+        "hex": "#552E0F"
+      },
+      "fish_gold": {
+        "xy": [
+          745,
+          300
+        ],
+        "hex": "#F7B52B"
+      },
+      "apple_red": {
+        "xy": [
+          637,
+          158
+        ],
+        "hex": "#FA6D51"
+      },
+      "cloud_shade": {
+        "xy": [
+          375,
+          95
+        ],
+        "hex": "#EAEAEA"
+      }
+    }
+  },
+  "next": [
+    "Create object masks and refine bounding boxes from pixel regions.",
+    "Sample multiple interior pixels per material region and use median RGB/HSV.",
+    "Map screen-space landmarks to the chosen isometric world grid after camera calibration."
+  ]
+}

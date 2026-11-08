@@ -60,36 +60,42 @@ function group(parent = scene, x = 0, y = 0, z = 0) {
   return g;
 }
 
-// Reference island: broad square voxel meadow with a stepped, irregular perimeter
-// and a compact floating dirt underside. Keep the footprint data-driven.
+// Measured target footprint: 20 cells left of the visual center and 26 right.
+// Approximate depth is 32 cells. The rear-left corner is intentionally clipped.
+// A 0.30 world-unit voxel keeps the larger 46x32 grid in the existing diorama scale.
 const island = group();
 const islandCells = [];
-const edgeNotches = new Set([
-  "-7,-7","7,-7","-7,7","7,7",
-  "-7,-6","-6,-7","7,6","6,7",
-  "-7,6","-6,7","7,-6","6,-7"
-]);
-for (let x = -7; x <= 7; x++) {
-  for (let z = -7; z <= 7; z++) {
-    if (edgeNotches.has(`${x},${z}`)) continue;
-    islandCells.push([x,z]);
-    const edge = Math.max(Math.abs(x), Math.abs(z)) >= 6;
+const VOXEL = 0.30;
+const X_MIN = -20, X_MAX = 25, Z_MIN = -16, Z_MAX = 15;
+function isIslandCell(x, z) {
+  // Cut away a stepped triangular notch at the rear-left corner.
+  if (z <= -14 && x <= -17 + (z + 16) * 2) return false;
+  return true;
+}
+for (let x = X_MIN; x <= X_MAX; x++) {
+  for (let z = Z_MIN; z <= Z_MAX; z++) {
+    if (!isIslandCell(x, z)) continue;
+    const wx = x * VOXEL, wz = z * VOXEL;
+    islandCells.push([wx, wz]);
+    const edge = x === X_MIN || x === X_MAX || z === Z_MIN || z === Z_MAX ||
+      !isIslandCell(x - 1, z) || !isIslandCell(x + 1, z) ||
+      !isIslandCell(x, z - 1) || !isIslandCell(x, z + 1);
     const topMat = ((x * 3 + z * 5) % 11 === 0) ? M.grassLight : (edge ? M.grassDark : M.grass);
-    block(island, x, -0.02, z, 1, 0.42, 1, topMat);
-    // Continuous brown soil body directly beneath the grass cap.
+    block(island, wx, -0.02, wz, VOXEL, 0.18, VOXEL, topMat);
     const soilMat = ((x * 7 + z * 3) % 5 === 0) ? M.soilDark : M.soil;
-    block(island, x, -0.43, z, 1, 0.43, 1, soilMat);
+    block(island, wx, -0.23, wz, VOXEL, 0.24, VOXEL, soilMat);
   }
 }
-// Broken, stepped chunks under the front and side edges create the floating-island silhouette.
-for (let x = -6; x <= 6; x++) {
-  for (let z = -6; z <= 6; z++) {
-    const perimeter = Math.max(Math.abs(x), Math.abs(z));
-    if (perimeter < 4) continue;
+// Irregular floating soil fragments beneath the front and side perimeter.
+for (let x = X_MIN + 1; x < X_MAX; x++) {
+  for (let z = Z_MIN + 1; z < Z_MAX; z++) {
+    const edgeDistance = Math.min(x - X_MIN, X_MAX - x, z - Z_MIN, Z_MAX - z);
+    if (edgeDistance > 3) continue;
+    if (!isIslandCell(x, z)) continue;
     const hash = Math.abs((x * 17 + z * 29 + x * z * 3) % 7);
     if (hash < 3) continue;
-    const depth = hash === 6 ? 1.18 : 0.88;
-    block(island, x + (hash % 2 ? 0.04 : -0.04), -0.78 - depth * 0.18, z, 0.88, depth, 0.88, hash % 2 ? M.soilDark : M.soilShade);
+    const depth = hash === 6 ? 0.42 : 0.30;
+    block(island, x * VOXEL, -0.48 - depth * 0.18, z * VOXEL, 0.27, depth, 0.27, hash % 2 ? M.soilDark : M.soilShade);
   }
 }
 // Rounded apple tree with a thick trunk and a stepped spherical canopy.
@@ -217,7 +223,7 @@ const markerDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THRE
 marker.add(markerDot);
 
 // Invisible walkable plane, clipped to the meadow's diamond silhouette.
-const walkPlane = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
+const walkPlane = new THREE.Mesh(new THREE.PlaneGeometry(13.8, 9.6), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
 walkPlane.rotation.x = -Math.PI / 2; walkPlane.position.y = 0.205; scene.add(walkPlane);
 
 const raycaster = new THREE.Raycaster();
@@ -241,7 +247,7 @@ function updateStats() {
   $('mood-tag').textContent = hunger < 25 ? '♡ A little hungry' : happiness > 75 ? '♡ Feeling cozy' : '♡ Wants to play';
 }
 function movePet(x, z) {
-  target = new THREE.Vector3(THREE.MathUtils.clamp(x, -5.25, 5.25), 0.23, THREE.MathUtils.clamp(z, -5.25, 5.25));
+  target = new THREE.Vector3(THREE.MathUtils.clamp(x, -5.7, 7.5), 0.23, THREE.MathUtils.clamp(z, -4.5, 4.5));
   $('scene-tip').textContent = '🐾 Mochi is on the move!';
 }
 function chooseWalkPoint() {
@@ -297,7 +303,7 @@ canvas.addEventListener('pointerdown', (event) => {
   const hit = raycaster.intersectObject(walkPlane)[0];
   if (!hit) return;
   const { x, z } = hit.point;
-  if (Math.abs(x) + Math.abs(z) * 0.92 > 10.15) return;
+  if (Math.abs(x) > 7.8 || Math.abs(z) > 4.8) return;
   movePet(x, z);
 });
 

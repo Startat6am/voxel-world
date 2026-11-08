@@ -4,11 +4,11 @@ import './style.css';
 const $ = (id) => document.getElementById(id);
 const canvas = $('world');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#78bdf0');
-scene.fog = new THREE.Fog('#78bdf0', 34, 65);
+scene.background = new THREE.Color('#78c2fb');
+scene.fog = new THREE.Fog('#78c2fb', 52, 90);
 
 const camera = new THREE.OrthographicCamera(-10, 10, 8, -8, 0.1, 100);
-const homePosition = new THREE.Vector3(13, 13.5, 13);
+const homePosition = new THREE.Vector3(13, 7.8, 13);
 camera.position.copy(homePosition);
 camera.lookAt(0, 0.25, 0);
 

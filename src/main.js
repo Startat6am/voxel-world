@@ -4,11 +4,11 @@ import './style.css';
 const $ = (id) => document.getElementById(id);
 const canvas = $('world');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#a9d5e5');
-scene.fog = new THREE.Fog('#a9d5e5', 25, 52);
+scene.background = new THREE.Color('#78bdf0');
+scene.fog = new THREE.Fog('#78bdf0', 34, 65);
 
 const camera = new THREE.OrthographicCamera(-10, 10, 8, -8, 0.1, 100);
-const homePosition = new THREE.Vector3(14, 12.5, 14);
+const homePosition = new THREE.Vector3(13, 13.5, 13);
 camera.position.copy(homePosition);
 camera.lookAt(0, 0.25, 0);
 
@@ -20,8 +20,8 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NeutralToneMapping;
 renderer.toneMappingExposure = 1.08;
 
-scene.add(new THREE.HemisphereLight(0xe5fff0, 0x65432f, 1.65));
-const sun = new THREE.DirectionalLight(0xffe5bd, 2.45);
+scene.add(new THREE.HemisphereLight(0xe8f5ff, 0x68452d, 1.15));
+const sun = new THREE.DirectionalLight(0xfff1d7, 2.7);
 sun.position.set(-8, 15, 9);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -31,15 +31,15 @@ scene.add(sun);
 
 const material = (color, roughness = 1) => new THREE.MeshStandardMaterial({ color, roughness });
 const M = {
-  grass: material('#70c653'), grassLight: material('#9be36f'), grassDark: material('#4f9f43'),
-  soil: material('#a96d43'), soilDark: material('#80502f'), soilShade: material('#573b2d'),
+  grass: material('#76c936'), grassLight: material('#9bdc4b'), grassDark: material('#4c9d24'),
+  soil: material('#9a5728'), soilDark: material('#784019'), soilShade: material('#593015'),
   bark: material('#986440'), barkLight: material('#b77b4c'),
-  leaf: material('#27864a'), leafLight: material('#54b85b'), leafDark: material('#1d653a'),
+  leaf: material('#3b9b19'), leafLight: material('#70c52b'), leafDark: material('#176c26'),
   stone: material('#9baaa2'), stoneLight: material('#c4cec3'),
   water: material('#43b6c6', 0.3), waterLight: material('#8cddd5', 0.3),
   pink: material('#f49cbe'), yellow: material('#ffe08b'), cream: material('#fff2d8'),
-  pet: material('#e8a45f'), petLight: material('#f4c68e'), petDark: material('#bd7548'),
-  nose: material('#493d39'), blush: material('#e98f8c')
+  pet: material('#fff8ed'), petLight: material('#ffffff'), petDark: material('#e8dfd2'),
+  nose: material('#202329'), blush: material('#f49aab')
 };
 const cube = new THREE.BoxGeometry(1, 1, 1);
 const worldObjects = [];
@@ -60,84 +60,75 @@ function group(parent = scene, x = 0, y = 0, z = 0) {
   return g;
 }
 
-// A floating diamond-shaped meadow, built from individual chunky voxel tiles.
+// Square floating grass island with a clean voxel-cut soil edge.
 const island = group();
 const islandCells = [];
-for (let x = -6; x <= 6; x++) {
-  for (let z = -6; z <= 6; z++) {
-    const distance = Math.abs(x) + Math.abs(z) * 0.92;
-    if (distance > 10.6) continue;
-    islandCells.push([x, z]);
-    const edge = distance > 9.1;
-    block(island, x, -0.04, z, 1, 0.46, 1, edge ? M.grassDark : M.grass);
-    if (distance > 7.3) {
-      block(island, x, -0.49, z, 1, 0.52, 1, M.soil);
-      if ((x * 7 + z * 11) % 4 === 0) block(island, x, -0.94, z, 1, 0.38, 1, M.soilDark);
-    }
+for (let x = -7; x <= 7; x++) {
+  for (let z = -7; z <= 7; z++) {
+    const edge = Math.max(Math.abs(x), Math.abs(z)) > 5;
+    islandCells.push([x,z]);
+    block(island, x, -0.02, z, 1, 0.42, 1, edge ? M.grassDark : M.grass);
+    block(island, x, -0.43, z, 1, 0.43, 1, (x+z)%4===0 ? M.soilDark : M.soil);
   }
 }
-// Tapered, rocky underside makes the island feel suspended in the sky.
-for (let layer = 0; layer < 4; layer++) {
-  const radius = 4.9 - layer * 0.85;
-  const y = -1.28 - layer * 0.39;
-  const count = Math.round(22 - layer * 3);
-  for (let i = 0; i < count; i++) {
-    const a = (i / count) * Math.PI * 2;
-    const x = Math.cos(a) * radius;
-    const z = Math.sin(a) * radius;
-    block(island, x, y, z, 1.12 - layer * 0.12, 0.78, 1.12 - layer * 0.12, layer > 1 ? M.soilShade : M.soilDark);
-  }
+// Chunky underside silhouette, visible below the square platform.
+for (let x=-5; x<=5; x++) for (let z=-5; z<=5; z++) {
+  if (Math.abs(x)+Math.abs(z)>8 && (x*z)%2!==0) continue;
+  if ((x*7+z*11)%3===0) block(island,x,-0.88,z,0.9,0.48,0.9,M.soilDark);
 }
-for (let i = 0; i < 12; i++) {
-  const a = i / 12 * Math.PI * 2;
-  block(island, Math.cos(a) * 2.3, -2.48, Math.sin(a) * 2.3, 0.9, 0.52, 0.9, M.soilShade);
+// Small turquoise pond in the back-center, edged with pale stone blocks.
+const pond = group(island, -0.25, 0.205, -2.2);
+block(pond,0,0,0,2.5,0.055,1.75,M.water,false);
+block(pond,-0.2,0.035,-0.08,1.45,0.018,0.9,M.waterLight,false);
+[[-1.45,-.55],[-1.1,.65],[-.35,.95],[.65,.8],[1.3,.35],[1.2,-.55],[.45,-.9],[-.65,-.9]].forEach(([x,z],i)=>block(pond,x,.08,z,.48,.18,.42,i%2?M.stone:M.stoneLight));
+// Rounded apple tree with a thick trunk and a stepped spherical canopy.
+function makeTree(x,z,scale=1) {
+ const t=group(island,x,0,z);
+ block(t,0,.95*scale,0,.72*scale,1.9*scale,.72*scale,M.bark);
+ block(t,-.19*scale,.95*scale,-.39*scale,.15*scale,1.45*scale,.08*scale,M.barkLight);
+ const crown=[
+  [0,2.45,0,2.5,1.05,2.35],[0,3.15,0,2.15,.9,2.1],
+  [-.55,3.65,0,1.55,.8,1.65],[.5,3.62,.05,1.55,.8,1.6],
+  [0,4.02,0,1.35,.65,1.4],[-.85,3.05,0,.85,1.1,1.5],[.85,3.05,0,.85,1.1,1.5]
+ ];
+ crown.forEach(([x,y,z,sx,sy,sz],i)=>block(t,x*scale,y*scale,z*scale,sx*scale,sy*scale,sz*scale,i%3===0?M.leafLight:M.leaf));
+ const apple=material('#ef5545');
+ [[-.75,3.45,-.8],[.72,2.9,-.83],[.15,3.85,.68]].forEach(([ax,ay,az])=>block(t,ax*scale,ay*scale,az*scale,.42*scale,.43*scale,.35*scale,apple));
 }
-
-// A small clear pond with a blocky pebble shoreline.
-const pond = group(island, -2.35, 0.205, -2.15);
-block(pond, 0, 0, 0, 2.65, 0.055, 1.95, M.water, false);
-block(pond, -0.35, 0.035, -0.15, 1.65, 0.018, 1.05, M.waterLight, false);
-[[-1.55, -0.65], [-1.3, 0.72], [-0.6, 1.05], [0.65, 0.96], [1.3, 0.45], [1.3, -0.6], [0.7, -1.0], [-0.8, -1.0]].forEach(([x, z], i) => {
-  block(pond, x, 0.08, z, 0.55, 0.2, 0.5, i % 2 ? M.stone : M.stoneLight);
-});
-
-// Trees: trunks and layered cubic crowns, with a few sunlit leaf cubes.
-function makeTree(x, z, scale = 1) {
-  const t = group(island, x, 0, z);
-  block(t, 0, 0.77 * scale, 0, 0.42 * scale, 1.55 * scale, 0.42 * scale, M.bark);
-  block(t, -0.03 * scale, 0.9 * scale, -0.22 * scale, 0.13 * scale, 1.15 * scale, 0.08 * scale, M.barkLight);
-  const tiers = [
-    { y: 1.8, r: 1.25, mat: M.leaf },
-    { y: 2.42, r: 0.98, mat: M.leafLight },
-    { y: 3.03, r: 0.66, mat: M.leafDark }
-  ];
-  tiers.forEach(({ y, r, mat }, tier) => {
-    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
-      if (Math.abs(dx) + Math.abs(dz) > 2) continue;
-      block(t, dx * r * 0.57 * scale, y * scale, dz * r * 0.57 * scale, r * scale, 0.82 * scale, r * scale, mat);
-    }
-    if (tier === 0) block(t, -0.65 * scale, 1.9 * scale, -0.22 * scale, 0.5 * scale, 0.48 * scale, 0.5 * scale, M.leafLight);
-  });
-}
-makeTree(-4.65, 1.55, 1.02);
-makeTree(4.35, -3.55, 0.92);
-makeTree(4.5, 2.15, 0.78);
-
+makeTree(-3.6,-2.0,1.0);
 function makeBush(x, z, s = 1) {
   const b = group(island, x, 0, z);
   block(b, 0, 0.48 * s, 0, 0.8 * s, 0.68 * s, 0.8 * s, M.leaf);
   block(b, 0.38 * s, 0.62 * s, 0.1 * s, 0.55 * s, 0.6 * s, 0.55 * s, M.leafLight);
   block(b, -0.34 * s, 0.59 * s, -0.16 * s, 0.55 * s, 0.58 * s, 0.55 * s, M.leafDark);
 }
-makeBush(-4.1, -1.15, 0.8); makeBush(2.8, 4.15, 0.85); makeBush(-0.9, 4.45, 0.72); makeBush(4.8, 0.25, 0.65);
+makeBush(-5.1,1.1,0.9); makeBush(5.2,-2.3,0.95); makeBush(4.8,1.2,0.85); makeBush(-1.5,4.8,0.7);
 
 function makeRock(x, z, s = 1) {
   const r = group(island, x, 0, z);
   block(r, 0, 0.38 * s, 0, 0.85 * s, 0.62 * s, 0.75 * s, M.stone);
   block(r, -0.12 * s, 0.75 * s, -0.08 * s, 0.48 * s, 0.34 * s, 0.5 * s, M.stoneLight);
 }
-makeRock(2.65, -1.1, 0.82); makeRock(-1.3, 3.85, 0.7); makeRock(4.8, 1.1, 0.55);
+makeRock(-2.1,3.4,0.7); makeRock(4.3,2.7,0.8);
 
+// Cream cottage with a deep-blue stepped voxel roof, door, chimney and fence.
+const house=group(island,3.35,0,-1.55);
+block(house,0,1.25,0,3.0,2.5,2.65,material('#f4dfb6'));
+block(house,0,1.25,1.34,3.0,2.5,.12,material('#f8e8c9'));
+block(house,-.35,.82,1.43,.85,1.62,.16,material('#754321'));
+block(house,-.35,.85,1.54,.12,.12,.06,material('#f4c44f'));
+block(house,.92,1.55,1.45,.68,.78,.16,material('#81502c'));
+block(house,.92,1.55,1.55,.43,.52,.05,material('#55a9dc'));
+const roofBlue=material('#2868d5');
+for(let row=0;row<4;row++){
+ const width=3.9-row*.42, depth=3.25-row*.42;
+ block(house,0,2.55+row*.38,-.05,width,.42,depth,roofBlue);
+ for(let x=-Math.floor(width);x<=Math.floor(width);x+=.72) block(house,x*.42,2.79+row*.38,1.35-row*.42,.38,.36,.42,roofBlue);
+}
+block(house,1.05,4.25,-.25,.55,.9,.55,material('#9a5728'));
+for(let i=0;i<3;i++) block(house,1.05,4.85+i*.27,-.25,.23,.22,.23,M.cream);
+for(let i=0;i<5;i++) block(house,1.0+i*.48,.55,1.95,.25,.8,.25,material('#bd9565'));
+block(house,1.95,.8,1.95,1.9,.16,.18,material('#bd9565'));
 // Tiny voxel flowers and individual grass tufts.
 function makeFlower(x, z, petalMat) {
   const f = group(island, x, 0, z);
@@ -148,7 +139,7 @@ function makeFlower(x, z, petalMat) {
   }
   block(f, 0, 0.67, 0, 0.12, 0.12, 0.12, M.yellow);
 }
-[[-5, -2, M.pink], [-3, 3, M.yellow], [0, 4, M.pink], [3, 3, M.cream], [5, -1, M.pink], [1, -4, M.yellow], [-5, 0, M.cream], [3, -4, M.pink], [-1, 1, M.yellow]].forEach(([x, z, c]) => makeFlower(x, z, c));
+[[-5,0,M.pink],[-2,4,M.yellow],[1,4,M.pink],[4,1,M.pink],[5,-1,M.cream],[0,-5,M.yellow],[-5,-3,M.cream],[3,-4,M.pink],[-1,2,M.yellow]].forEach(([x, z, c]) => makeFlower(x, z, c));
 for (let i = 0; i < 34; i++) {
   const [x, z] = islandCells[(i * 37 + 11) % islandCells.length];
   if (Math.abs(x) < 2 && Math.abs(z) < 2) continue;
@@ -164,40 +155,44 @@ function makeCloud(x, y, z, s) {
   });
   return c;
 }
-const clouds = [makeCloud(-9, 5.5, -5, 1.1), makeCloud(8, 6.3, 1, 0.85), makeCloud(-6, 4.6, 7, 0.72)];
+const clouds = [makeCloud(-9, 6.5, -5, 1.1), makeCloud(8, 7.2, 1, 0.85), makeCloud(-6, 5.8, 7, 0.72)];
 
-// Mochi, a tiny warm-colored bear/fox friend made from soft voxel shapes.
-const pet = group(scene, 0.55, 0.23, 0.55);
-const p = (x, y, z, sx, sy, sz, m) => block(pet, x, y, z, sx, sy, sz, m);
-p(0, 0.54, 0.02, 0.94, 0.76, 0.82, M.pet);
-p(0, 0.28, -0.03, 0.68, 0.28, 0.7, M.petLight);
-p(0, 1.18, -0.34, 0.94, 0.88, 0.84, M.pet);
-p(0, 0.96, -0.77, 0.62, 0.35, 0.28, M.cream);
-// Ears with warm pink inner pixels.
-p(-0.34, 1.78, -0.28, 0.31, 0.55, 0.34, M.petDark);
-p(-0.34, 1.79, -0.47, 0.16, 0.35, 0.06, M.blush);
-p(0.34, 1.78, -0.28, 0.31, 0.55, 0.34, M.petDark);
-p(0.34, 1.79, -0.47, 0.16, 0.35, 0.06, M.blush);
-// Eyes, tiny highlights, nose and rosy cheeks.
-p(-0.205, 1.27, -0.785, 0.105, 0.15, 0.055, M.nose);
-p(0.205, 1.27, -0.785, 0.105, 0.15, 0.055, M.nose);
-p(-0.23, 1.32, -0.818, 0.035, 0.045, 0.018, M.cream);
-p(0.18, 1.32, -0.818, 0.035, 0.045, 0.018, M.cream);
-p(0, 1.08, -0.94, 0.14, 0.105, 0.07, M.nose);
-p(-0.39, 1.03, -0.73, 0.16, 0.1, 0.04, M.blush);
-p(0.39, 1.03, -0.73, 0.16, 0.1, 0.04, M.blush);
-
+// White voxel kitten with pointed ears, pink nose and tiny paws.
+const pet = group(scene, 0.25, 0.23, 2.7);
+const p=(x,y,z,sx,sy,sz,m)=>block(pet,x,y,z,sx,sy,sz,m);
+p(0,.48,0,.9,.7,.78,M.petLight);
+p(0,1.12,-.28,.9,.82,.72,M.petLight);
+p(-.32,1.73,-.22,.28,.72,.28,M.petLight);
+p(.32,1.73,-.22,.28,.72,.28,M.petLight);
+p(-.32,1.76,-.38,.12,.42,.05,M.blush);
+p(.32,1.76,-.38,.12,.42,.05,M.blush);
+p(-.2,1.2,-.67,.11,.15,.05,M.nose);
+p(.2,1.2,-.67,.11,.15,.05,M.nose);
+p(0,1.0,-.72,.13,.1,.06,M.blush);
+p(-.34,.98,-.66,.14,.09,.05,M.blush);
+p(.34,.98,-.66,.14,.09,.05,M.blush);
+const tail=group(pet,.45,.55,.3);
+block(tail,.12,.2,.25,.25,.35,.25,M.petLight);
+block(tail,.12,.42,.42,.25,.18,.25,M.petLight);
 const legs = [];
 for (const x of [-0.3, 0.3]) for (const z of [-0.25, 0.25]) {
   const leg = group(pet, x, 0.19, z);
-  block(leg, 0, 0, 0, 0.23, 0.4, 0.24, M.petDark);
+  block(leg, 0, 0, 0, 0.23, 0.4, 0.24, M.petLight);
   legs.push(leg);
 }
-const tail = group(pet, 0.37, 0.72, 0.35);
-block(tail, 0.12, 0.17, 0.28, 0.28, 0.3, 0.48, M.pet);
-block(tail, 0.12, 0.3, 0.51, 0.3, 0.27, 0.25, M.cream);
 const petShadow = new THREE.Mesh(new THREE.CircleGeometry(0.72, 24), new THREE.MeshBasicMaterial({ color: '#476a49', transparent: true, opacity: 0.19 }));
 petShadow.rotation.x = -Math.PI / 2; petShadow.position.y = 0.025; pet.add(petShadow);
+
+// A little golden voxel fish hovering between the tree and cottage.
+const fish=group(scene,.25,2.05,-.15);
+const fishGold=material('#ffb51e'), fishLight=material('#ffd34c'), fishOrange=material('#f28b16');
+block(fish,0,0,0,.95,.62,.5,fishGold);
+block(fish,-.53,.02,0,.42,.48,.42,fishLight);
+block(fish,.65,0,0,.38,.42,.42,fishOrange);
+block(fish,.9,.28,0,.35,.25,.35,fishOrange);
+block(fish,-.16,.18,-.28,.13,.15,.06,M.nose);
+block(fish,-.22,.2,-.32,.04,.05,.025,M.cream);
+block(fish,.18,-.22,-.05,.3,.25,.18,fishLight);
 const marker = new THREE.Group(); marker.position.y = 2.75; pet.add(marker);
 const markerDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: '#fff4c2' }));
 marker.add(markerDot);

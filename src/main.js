@@ -224,7 +224,7 @@ marker.add(markerDot);
 
 // Invisible walkable plane, clipped to the meadow's diamond silhouette.
 const walkPlane = new THREE.Mesh(new THREE.PlaneGeometry(13.8, 9.6), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
-walkPlane.rotation.x = -Math.PI / 2; walkPlane.position.y = 0.205; scene.add(walkPlane);
+walkPlane.rotation.x = -Math.PI / 2; walkPlane.position.set(0.75, 0.205, -0.15); scene.add(walkPlane);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -303,7 +303,7 @@ canvas.addEventListener('pointerdown', (event) => {
   const hit = raycaster.intersectObject(walkPlane)[0];
   if (!hit) return;
   const { x, z } = hit.point;
-  if (Math.abs(x) > 7.8 || Math.abs(z) > 4.8) return;
+  if (x < -6.15 || x > 7.65 || z < -4.95 || z > 4.65) return;
   movePet(x, z);
 });
 

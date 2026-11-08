@@ -11,3 +11,6 @@
 .scene-wrap:fullscreen{aspect-ratio:auto;width:100vw;height:100vh}
 .scene-wrap:fullscreen #world{width:100%;height:100%}
 @media(max-width:440px){.scene-tools{top:8px;left:8px;right:8px}.mode-toggle{width:32px;height:32px}}
+
+.mode-toggle:nth-child(2) svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#world{touch-action:none}

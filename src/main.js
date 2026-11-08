@@ -251,7 +251,7 @@ const pointer = new THREE.Vector2();
 let target = null, elapsed = 0, walkTime = 0, foodObject = null, foodAge = 0;
 let hunger = 78, happiness = 92, apples = 5, selectedSnack = 'apple';
 let toastTimer = 0, idleTimer = 0, cameraTween = 0, soundOn = false;
-let cameraDragEnabled = false, petClickEnabled = true, activeCameraPointer = null;
+let cameraControlMode = 'pet', petClickEnabled = true, activeCameraPointer = null;
 const cameraDragStart = { x: 0, y: 0 };
 
 function say(message) {
@@ -306,21 +306,25 @@ function cuddle() {
 $('feed').addEventListener('click', feed);
 $('play').addEventListener('click', play);
 $('pet').addEventListener('click', cuddle);
-$('camera-home').addEventListener('click', () => { cameraTween = 1; say('A lovely view of your island'); });
+$('camera-home').addEventListener('click', () => { cameraTween = 1; camera.zoom = 1; camera.updateProjectionMatrix(); say('A lovely view of your island'); });
 const cameraModeButton = $('camera-pan-mode');
+const rotateModeButton = $('camera-rotate-mode');
 const petModeButton = $('pet-click-mode');
 function setInteractionMode(mode) {
-  cameraDragEnabled = mode === 'camera';
-  petClickEnabled = mode === 'pet';
-  cameraModeButton.classList.toggle('active', cameraDragEnabled);
+  cameraControlMode = mode === 'pan' || mode === 'rotate' ? mode : 'pet';
+  petClickEnabled = cameraControlMode === 'pet';
+  cameraModeButton.classList.toggle('active', cameraControlMode === 'pan');
+  rotateModeButton.classList.toggle('active', cameraControlMode === 'rotate');
   petModeButton.classList.toggle('active', petClickEnabled);
-  cameraModeButton.setAttribute('aria-pressed', String(cameraDragEnabled));
+  cameraModeButton.setAttribute('aria-pressed', String(cameraControlMode === 'pan'));
+  rotateModeButton.setAttribute('aria-pressed', String(cameraControlMode === 'rotate'));
   petModeButton.setAttribute('aria-pressed', String(petClickEnabled));
-  canvas.style.cursor = cameraDragEnabled ? 'grab' : 'crosshair';
-  $('scene-tip').textContent = cameraDragEnabled ? '✥ Drag to move the camera' : '🐾 Tap the island to move Mochi';
+  canvas.style.cursor = cameraControlMode === 'pet' ? 'crosshair' : cameraControlMode === 'pan' ? 'grab' : 'grab';
+  $('scene-tip').textContent = cameraControlMode === 'pan' ? '✥ Drag to move freely' : cameraControlMode === 'rotate' ? '⟳ Drag to rotate the camera' : '🐾 Tap the island to move Mochi';
 }
-cameraModeButton.addEventListener('click', () => setInteractionMode(cameraDragEnabled ? 'pet' : 'camera'));
-petModeButton.addEventListener('click', () => setInteractionMode(petClickEnabled ? 'camera' : 'pet'));
+cameraModeButton.addEventListener('click', () => setInteractionMode(cameraControlMode === 'pan' ? 'pet' : 'pan'));
+rotateModeButton.addEventListener('click', () => setInteractionMode(cameraControlMode === 'rotate' ? 'pet' : 'rotate'));
+petModeButton.addEventListener('click', () => setInteractionMode(petClickEnabled ? 'pan' : 'pet'));
 setInteractionMode('pet');
 $('fullscreen').addEventListener('click', () => {
   const wrap = $('scene-wrap');
@@ -333,7 +337,7 @@ $('sound-toggle').addEventListener('click', () => {
   say(soundOn ? 'A little birdsong would be lovely' : 'Quiet time 🌿');
 });
 canvas.addEventListener('pointerdown', (event) => {
-  if (cameraDragEnabled) {
+  if (cameraControlMode !== 'pet') {
     activeCameraPointer = event.pointerId;
     cameraDragStart.x = event.clientX;
     cameraDragStart.y = event.clientY;
@@ -358,20 +362,34 @@ canvas.addEventListener('pointermove', (event) => {
   const dy = event.clientY - cameraDragStart.y;
   cameraDragStart.x = event.clientX;
   cameraDragStart.y = event.clientY;
-  const worldPerPixel = (camera.top - camera.bottom) / Math.max(canvas.clientHeight, 1);
-  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
-  const forward = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 2);
-  right.y = 0; forward.y = 0; right.normalize(); forward.normalize();
-  const shift = right.multiplyScalar(-dx * worldPerPixel).add(forward.multiplyScalar(dy * worldPerPixel));
-  camera.position.add(shift);
-  cameraFocus.add(shift);
-  camera.lookAt(cameraFocus);
+  if (cameraControlMode === 'rotate') {
+    const offset = camera.position.clone().sub(cameraFocus);
+    const spherical = new THREE.Spherical().setFromVector3(offset);
+    spherical.theta -= dx * 0.006;
+    spherical.phi = THREE.MathUtils.clamp(spherical.phi + dy * 0.006, 0.18, Math.PI * 0.47);
+    camera.position.copy(cameraFocus).add(new THREE.Vector3().setFromSpherical(spherical));
+    camera.lookAt(cameraFocus);
+  } else {
+    camera.updateMatrixWorld();
+    const worldPerPixel = (camera.top - camera.bottom) / Math.max(canvas.clientHeight, 1) / camera.zoom;
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+    const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+    const shift = right.multiplyScalar(-dx * worldPerPixel).add(up.multiplyScalar(dy * worldPerPixel));
+    camera.position.add(shift);
+    cameraFocus.add(shift);
+    camera.lookAt(cameraFocus);
+  }
 });
 function finishCameraDrag(event) {
   if (activeCameraPointer !== event.pointerId) return;
   activeCameraPointer = null;
-  canvas.style.cursor = cameraDragEnabled ? 'grab' : 'crosshair';
+  canvas.style.cursor = cameraControlMode === 'pet' ? 'crosshair' : 'grab';
 }
+canvas.addEventListener('wheel', (event) => {
+  event.preventDefault();
+  camera.zoom = THREE.MathUtils.clamp(camera.zoom * Math.exp(-event.deltaY * 0.001), 0.65, 2.8);
+  camera.updateProjectionMatrix();
+}, { passive: false });
 canvas.addEventListener('pointerup', finishCameraDrag);
 canvas.addEventListener('pointercancel', finishCameraDrag);
 

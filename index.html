@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#b9dfd0">
+<title>Little Island — Voxel Pet World</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap');
+:root{font-family:Nunito,ui-rounded,system-ui,sans-serif;color:#355344;background:#edf4e9;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#f8fbef 0,#e9f2e5 65%,#e2eee2 100%)}
+button{font:inherit;cursor:pointer;border:0}button:focus-visible{outline:3px solid #6cae77;outline-offset:3px}
+.app{width:min(1120px,100%);margin:auto;padding:22px 24px 30px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:43px;height:43px;border-radius:15px;background:linear-gradient(145deg,#b6e7a2,#71be7d);display:grid;place-items:center;font-size:24px;box-shadow:inset 0 2px 0 #fff8,0 5px 12px #528b5730}
+.brand h1{font-size:19px;line-height:1.05;margin:0;font-weight:900;letter-spacing:-.5px;color:#355344}.brand small{font-size:11px;color:#7b9882;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+.day{border:1px solid #dce9d8;background:#ffffffb8;padding:9px 14px;border-radius:30px;font-weight:800;font-size:12px;color:#64816b;box-shadow:0 3px 12px #577a5010}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;align-items:stretch}
+.world-card{position:relative;overflow:hidden;border:1px solid #d8e8d6;border-radius:25px;background:#c9e6df;box-shadow:0 14px 40px #426c4a14;min-height:530px}
+.world-head{position:absolute;z-index:3;left:20px;top:17px;pointer-events:none}.world-head strong{display:block;font-size:15px;color:#456d56}.world-head span{font-size:11px;color:#72917b;font-weight:700}
+#world{width:100%;height:100%;min-height:530px;display:block;touch-action:pan-y;cursor:crosshair}
+.world-tip{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);padding:9px 14px;border-radius:30px;background:#ffffffd9;box-shadow:0 4px 15px #315c4320;color:#587762;font-size:11px;font-weight:800;white-space:nowrap;pointer-events:none;backdrop-filter:blur(8px)}
+.side{display:flex;flex-direction:column;gap:12px}
+.panel{background:#fffdf8;border:1px solid #e5eadc;border-radius:20px;padding:16px;box-shadow:0 7px 22px #426c4a0c}
+.pet-name{display:flex;align-items:center;gap:10px;margin-bottom:13px}.pet-avatar{width:45px;height:45px;border-radius:15px;background:#fff0d8;display:grid;place-items:center;font-size:27px}.pet-name h2{font-size:17px;margin:0;color:#3c5d48;font-weight:900}.pet-name small{color:#94a58e;font-weight:700;font-size:11px}
+.stat{margin:13px 0}.stat-label{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#718a72;margin-bottom:7px}.stat-label b{color:#526e58}.track{height:9px;border-radius:12px;background:#edf0e7;overflow:hidden}.fill{height:100%;border-radius:12px;transition:width .35s ease}.hunger{background:linear-gradient(90deg,#f5c66b,#eaa64c)}.happy{background:linear-gradient(90deg,#9ad78a,#64ba7a)}
+.mood{display:flex;align-items:center;gap:8px;background:#f3f8ee;border-radius:13px;padding:10px 11px;margin-top:14px;font-size:12px;font-weight:800;color:#66816a}.mood span{font-size:18px}
+.section-title{font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#9aab91;margin:0 0 10px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.action{border-radius:13px;padding:11px 8px;background:#f3f7ed;color:#58735d;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s,background .15s}.action:hover{background:#e9f3df;transform:translateY(-1px)}.action.primary{background:#77bd7e;color:white;box-shadow:0 4px 10px #6eae7540}.action.primary:hover{background:#68ae71}.action:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.inventory{display:flex;gap:8px}.food{flex:1;border:1px solid #e6eadf;background:#fff;border-radius:13px;padding:9px 4px;text-align:center;color:#607a61;font-size:11px;font-weight:900}.food .emoji{display:block;font-size:22px;margin-bottom:3px}.food.active{border:2px solid #82c17f;background:#f2faed;padding:8px 3px}
+.footer{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#9aaa92;font-size:10px;font-weight:700;padding:15px 3px 0}
+.toast{position:absolute;top:65px;left:50%;transform:translate(-50%,-8px);opacity:0;transition:.25s;background:#fffdf3;border:1px solid #e6e6cf;padding:9px 15px;border-radius:30px;color:#657c57;font-size:12px;font-weight:900;box-shadow:0 5px 18px #344f3320;pointer-events:none;z-index:5;white-space:nowrap}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:760px){.app{padding:14px 12px 22px}.main{grid-template-columns:1fr}.world-card{min-height:390px}#world{min-height:390px}.side{display:grid;grid-template-columns:1fr 1fr;align-items:start}.panel:first-child{grid-row:span 2}.footer{font-size:9px}}
+@media(max-width:440px){.side{grid-template-columns:1fr}.panel:first-child{grid-row:auto}.world-card{min-height:340px}#world{min-height:340px}.brand h1{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar"><div class="brand"><div class="logo">🌱</div><div><h1>Little Island</h1><small>voxel pet world</small></div></div><div class="day">☀️ &nbsp;День <span id="day">1</span></div></header>
+<main class="main">
+<section class="world-card"><div class="world-head"><strong>Твой зелёный уголок</strong><span>Маленький мир больших приключений</span></div><canvas id="world" aria-label="Трёхмерный воксельный остров. Нажми на траву, чтобы переместить питомца."></canvas><div class="toast" id="toast"></div><div class="world-tip" id="tip">👆 Нажми на остров, чтобы позвать питомца</div></section>
+<aside class="side">
+<section class="panel"><div class="pet-name"><div class="pet-avatar">🐾</div><div><h2>Бисквит</h2><small>Твой маленький друг</small></div></div>
+<div class="stat"><div class="stat-label"><span>🍎 Сытость</span><b id="hungerText">72%</b></div><div class="track"><div class="fill hunger" id="hungerBar" style="width:72%"></div></div></div>
+<div class="stat"><div class="stat-label"><span>💚 Настроение</span><b id="happyText">86%</b></div><div class="track"><div class="fill happy" id="happyBar" style="width:86%"></div></div></div>
+<div class="mood"><span id="moodIcon">🥰</span><span id="moodText">Бисквит счастлив!</span></div></section>
+<section class="panel"><p class="section-title">Позаботиться</p><div class="actions"><button class="action primary" id="feed">🍎 Покормить</button><button class="action" id="play">🎾 Поиграть</button><button class="action" id="pet">🤍 Погладить</button><button class="action" id="call">🐾 Ко мне!</button></div></section>
+<section class="panel"><p class="section-title">Угощение</p><div class="inventory"><button class="food active" id="apple"><span class="emoji">🍎</span>Яблоко × <span id="apples">5</span></button><button class="food" id="berry"><span class="emoji">🫐</span>Ягоды × <span id="berries">3</span></button></div></section>
+</aside></main>
+<footer class="footer"><span>🌼 Уютный мир Бисквита</span><span>Прогресс сохраняется в этой сессии</span></footer>
+</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
+const canvas=document.querySelector('#world');
+const scene=new THREE.Scene();scene.background=new THREE.Color('#c9e6df');scene.fog=new THREE.Fog('#c9e6df',18,34);
+const camera=new THREE.OrthographicCamera(-10,10,8,-8,.1,100);camera.position.set(12,14,12);camera.lookAt(0,1,0);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;
+scene.add(new THREE.HemisphereLight(0xe9fff0,0x846b4b,2.05));
+const sun=new THREE.DirectionalLight(0xfff1d1,3.1);sun.position.set(-7,13,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-12;sun.shadow.camera.right=12;sun.shadow.camera.top=12;sun.shadow.camera.bottom=-12;sun.shadow.bias=-.0004;scene.add(sun);
+const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
+const grass=mat('#86c96b'),grassLight=mat('#9cdb7b'),grassDark=mat('#67ae58'),soil=mat('#9a6744'),soilDark=mat('#765039'),trunk=mat('#94613d'),trunkLight=mat('#b27a4d'),leaf1=mat('#469b59'),leaf2=mat('#62b96a'),leaf3=mat('#32834c'),stone=mat('#9baaa1'),stoneLight=mat('#c0cbc0'),water=mat('#71c5cb',.3),flowerPink=mat('#f49bc0'),flowerYellow=mat('#ffe18a'),white=mat('#fff4dd');
+const cubeGeo=new THREE.BoxGeometry(1,1,1);
+function block(x,y,z,material,sx=1,sy=1,sz=1,parent=scene){const m=new THREE.Mesh(cubeGeo,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+const islandTop=[];
+for(let x=-6;x<=6;x++)for(let z=-6;z<=6;z++){const d=Math.abs(x)+Math.abs(z)*.88;if(d>10.8)continue;const edge=d>9.1;block(x,0,z,edge?grassDark:grass,1,.42,1);islandTop.push({x,z});if(d>7.4){block(x,-.48,z,soil,1,.55,1);if((x*7+z*11)%4===0)block(x,-.93,z,soilDark,1,.4,1)}}
+const topPlane=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat('#b7d9c3'));topPlane.rotation.x=-Math.PI/2;topPlane.position.y=-2.15;scene.add(topPlane);
+// Soft floating underside silhouette, layered blocky earth
+for(let i=0;i<23;i++){const a=i/23*Math.PI*2;const x=Math.cos(a)*4.5,z=Math.sin(a)*4.5;block(x,-1.45,z,soilDark,1.2,.85,1.2)}
+for(let i=0;i<12;i++){const a=i/12*Math.PI*2;const x=Math.cos(a)*2.5,z=Math.sin(a)*2.5;block(x,-1.9,z,soil,1,.65,1)}
+// Water pond inset on rear-left area
+const pond=block(-2.5,.235,-2.25,water,2.8,.035,2.05);pond.castShadow=false;
+for(let x=-4;x<=-1;x++)for(let z=-3;z<=-2;z++){if(Math.abs(x+2.5)<1.5&&Math.abs(z+2.5)<1.1)block(x,.24,z,water,.91,.035,.91)}
+// Pond edge stones
+[[-4,-2],[-4,-3],[-3,-4],[-2,-4],[-1,-3],[-1,-2]].forEach(([x,z])=>block(x,.35,z,stone,.65,.22,.55));
+// Trees assembled from cube clusters
+function tree(x,z,s=1){block(x,.75*s,z,trunk,.42*s,1.5*s,.42*s);block(x,1.35*s,z,trunkLight,.45*s,.35*s,.45*s);
+const layers=[{y:1.85,r:1.25,m:leaf1},{y:2.45,r:.95,m:leaf2},{y:3.02,r:.62,m:leaf3}];layers.forEach((l,i)=>{for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++){if(Math.abs(dx)+Math.abs(dz)>2)continue;block(x+dx*l.r*.57,l.y*s,z+dz*l.r*.57,l.m,l.r*s,.85*s,l.r*s)}});block(x-.38,2.1*s,z-.25,leaf2,.5*s,.5*s,.5*s)}
+tree(-4.7,1.5,1.03);tree(4.25,-3.4,.92);tree(4.35,2.15,.78);
+function bush(x,z){block(x,.58,z,leaf1,.8,.75,.8);block(x+.42,.72,z+.08,leaf2,.55,.62,.55);block(x-.35,.69,z-.15,leaf3,.55,.6,.55)}
+bush(-4.2,-1);bush(2.8,4.2);bush(-.8,4.3);bush(4.6,.3);
+function rock(x,z,s=1){block(x,.48*s,z,stone,.8*s,.65*s,.75*s);block(x-.15*s,.82*s,z-.08*s,stoneLight,.48*s,.32*s,.5*s)}
+rock(2.6,-1.2,.8);rock(-1.4,3.8,.75);rock(4.8,1.2,.55);
+// Flower tufts and grass sprigs
+function flower(x,z,color){block(x,.48,z,grassDark,.1,.45,.1);const fm=mat(color);for(let i=0;i<4;i++){const a=i*Math.PI/2;block(x+Math.cos(a)*.16,.78,z+Math.sin(a)*.16,fm,.22,.18,.22)}block(x,.82,z,flowerYellow,.13,.13,.13)}
+[[ -5,-2, '#f49bc0'],[-3,3,'#ffe18a'],[0,4,'#f49bc0'],[3,3,'#fff0b1'],[5,-1,'#f49bc0'],[1,-4,'#ffe18a'],[-5,0,'#fff0b1'],[3,-4,'#f49bc0']].forEach(([x,z,c])=>flower(x,z,c));
+for(let i=0;i<28;i++){const p=islandTop[(i*37+11)%islandTop.length];if(Math.abs(p.x)<2&&Math.abs(p.z)<2)continue;const spr=block(p.x+.25,.48,p.z+.2,grassLight,.09,.35,.09);spr.rotation.z=(i%2?.2:-.2)}
+// Floating little clouds
+function cloud(x,y,z,s){const g=new THREE.Group();[[0,0,0],[.7,.1,0],[-.65,.04,.05],[.15,.42,0]].forEach(([a,b,c],i)=>{const m=new THREE.Mesh(cubeGeo,white);m.position.set(a*s,b*s,c*s);m.scale.set((i===3?.8:1)*s,.42*s,.55*s);g.add(m)});g.position.set(x,y,z);scene.add(g);return g}
+const clouds=[cloud(-8,5,-5,1.1),cloud(7,6,1,.8),cloud(-6,4,6,.7)];
+// Pet: tiny voxel fox-like puppy
+const pet=new THREE.Group();scene.add(pet);pet.position.set(.6,.45,.5);
+const fur=mat('#e8a35f'),furLight=mat('#f4c184'),furDark=mat('#b96e43'),muzzle=mat('#fff0d9'),black=mat('#493d39'),eye=mat('#352f2d'),pink=mat('#e88d88');
+function pbox(x,y,z,sx,sy,sz,m){return block(x,y,z,m,sx,sy,sz,pet)}
+// body
+pbox(0,.55,0,.92,.76,.78,fur);pbox(0,.27,-.03,.65,.34,.69,furLight);
+// head and cheeks
+pbox(0,1.18,-.35,.92,.86,.82,fur);pbox(0,.96,-.78,.58,.36,.32,muzzle);
+// ears
+pbox(-.32,1.78,-.28,.3,.55,.32,furDark);pbox(-.32,1.78,-.3,.16,.37,.19,pink);
+pbox(.32,1.78,-.28,.3,.55,.32,furDark);pbox(.32,1.78,-.3,.16,.37,.19,pink);
+// eye glints
+pbox(-.2,1.27,-.775,.105,.15,.055,eye);pbox(.2,1.27,-.775,.105,.15,.055,eye);
+pbox(-.225,1.32,-.81,.035,.045,.02,white);pbox(.175,1.32,-.81,.035,.045,.02,white);
+pbox(0,1.08,-.96,.14,.105,.08,black);
+pbox(-.39,1.03,-.73,.16,.1,.04,pink);pbox(.39,1.03,-.73,.16,.1,.04,pink);
+// legs
+const legs=[];for(const x of [-.3,.3])for(const z of [-.25,.25]){const leg=new THREE.Group();leg.position.set(x,.22,z);pet.add(leg);const lm=new THREE.Mesh(cubeGeo,furDark);lm.scale.set(.22,.42,.23);lm.position.y=-.02;lm.castShadow=true;leg.add(lm);legs.push(leg)}
+// tail
+const tail=new THREE.Group();tail.position.set(.35,.72,.35);pet.add(tail);const t1=new THREE.Mesh(cubeGeo,fur);t1.position.set(.12,.18,.3);t1.scale.set(.28,.3,.5);tail.add(t1);const t2=new THREE.Mesh(cubeGeo,furLight);t2.position.set(.12,.3,.53);t2.scale.set(.3,.28,.25);tail.add(t2);
+// name marker
+const marker=new THREE.Group();marker.position.set(0,2.65,0);pet.add(marker);
+const dot=new THREE.Mesh(new THREE.SphereGeometry(.045,8,8),mat('#fff5c4'));marker.add(dot);
+const shadow=new THREE.Mesh(new THREE.CircleGeometry(.68,24),new THREE.MeshBasicMaterial({color:'#46684a',transparent:true,opacity:.18}));shadow.rotation.x=-Math.PI/2;shadow.position.set(0,.025,0);pet.add(shadow);
+let target=null,walkTime=0,petState='idle',hunger=72,happy=86,apples=5,berries=3,selected='apple',foodMesh=null,foodTimer=0,toastTimer=0,day=1;
+const $=id=>document.getElementById(id);
+function say(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),1900)}
+function updateStats(){ $('hungerText').textContent=Math.round(hunger)+'%';$('happyText').textContent=Math.round(happy)+'%';$('hungerBar').style.width=hunger+'%';$('happyBar').style.width=happy+'%';$('apples').textContent=apples;$('berries').textContent=berries;$('moodIcon').textContent=hunger<25?'🥺':happy>75?'🥰':happy>40?'😊':'😴';$('moodText').textContent=hunger<25?'Бисквит проголодался':happy>75?'Бисквит счастлив!':happy>40?'Бисквит доволен':'Бисквит скучает'}
+function moveTo(x,z){target=new THREE.Vector3(THREE.MathUtils.clamp(x,-5.4,5.4),.45,THREE.MathUtils.clamp(z,-5.4,5.4));petState='walk';$('tip').textContent='🐾 Бисквит уже идёт!'}
+function makeFood(kind){if(foodMesh)scene.remove(foodMesh);const g=new THREE.Group();const fruit=new THREE.Mesh(new THREE.BoxGeometry(.36,.34,.36),mat(kind==='apple'?'#e94e4e':'#647bd0'));fruit.position.y=.25;g.add(fruit);const leaf=new THREE.Mesh(cubeGeo,mat('#5caa60'));leaf.position.set(.08,.47,0);leaf.scale.set(.13,.18,.1);g.add(leaf);g.position.copy(pet.position);g.position.x+=.7;g.position.z+=.3;scene.add(g);foodMesh=g;foodTimer=0;moveTo(g.position.x,g.position.z)}
+function feed(){if(selected==='apple'&&apples<=0||selected==='berry'&&berries<=0){say('Угощение закончилось!');return}if(selected==='apple')apples--;else berries--;makeFood(selected);say('Вкусняшка для Бисквита!');updateStats()}
+function play(){happy=Math.min(100,happy+12);petState='play';target=null;walkTime=0;say('Бисквит весело прыгает! 🎾');updateStats()}
+function petPet(){happy=Math.min(100,happy+8);pet.rotation.z=.12;say('Бисквит довольно виляет хвостом 🤍');updateStats()}
+$('feed').onclick=feed;$('play').onclick=play;$('pet').onclick=petPet;$('call').onclick=()=>{moveTo(0,1);say('Бисквит бежит к тебе!')};
+$('apple').onclick=()=>{selected='apple';$('apple').classList.add('active');$('berry').classList.remove('active')};
+$('berry').onclick=()=>{selected='berry';$('berry').classList.add('active');$('apple').classList.remove('active')};
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);const aspect=w/h;camera.left=-8.8*aspect/1.5;camera.right=8.8*aspect/1.5;camera.top=8.8/1.5;camera.bottom=-8.8/1.5;camera.updateProjectionMatrix()}
+const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(canvas);resize();
+canvas.addEventListener('pointerdown',e=>{const rect=canvas.getBoundingClientRect();pointer.x=(e.clientX-rect.left)/rect.width*2-1;pointer.y=-((e.clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(scene.children,true);const hit=hits.find(h=>h.object.position.y>=-.1&&h.point.y>-.1&&h.object!==pet);if(hit){const p=hit.point;moveTo(p.x,p.z)}});
+let last=0,elapsed=0;
+function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000||0,.04);last=now;elapsed+=dt;
+clouds.forEach((c,i)=>{c.position.x+=dt*(i===1?-.09:.055);if(c.position.x>12)c.position.x=-12;if(c.position.x< -12)c.position.x=12});
+if(target){const dx=target.x-pet.position.x,dz=target.z-pet.position.z,dist=Math.hypot(dx,dz);if(dist>.08){pet.position.x+=dx/dist*dt*2.8;pet.position.z+=dz/dist*dt*2.8;pet.rotation.y=Math.atan2(dx,dz);walkTime+=dt;pet.position.y=.45+Math.abs(Math.sin(walkTime*12))*.12;legs.forEach((l,i)=>l.rotation.x=Math.sin(walkTime*12+(i%2)*Math.PI)*.45);tail.rotation.x=Math.sin(elapsed*12)*.3}else{target=null;petState='idle';pet.position.y=.45;legs.forEach(l=>l.rotation.x=0);$('tip').textContent='✨ Нажми на остров, чтобы отправить Бисквита гулять'}}
+else{pet.position.y=.45+Math.sin(elapsed*2.4)*.045;pet.rotation.z=Math.sin(elapsed*1.7)*.025;tail.rotation.x=Math.sin(elapsed*4)*.35;legs.forEach(l=>l.rotation.x=0)}
+if(foodMesh){foodMesh.rotation.y+=dt*1.5;foodMesh.position.y=.5+Math.sin(elapsed*5)*.08;foodTimer+=dt;if(foodTimer>1.4){scene.remove(foodMesh);foodMesh=null;hunger=Math.min(100,hunger+(selected==='apple'?22:13));happy=Math.min(100,happy+5);say('Ням-ням! Как вкусно! 🍓');updateStats()}}
+marker.position.y=2.65+Math.sin(elapsed*3)*.08;
+renderer.render(scene,camera)}
+requestAnimationFrame(animate);
+setInterval(()=>{hunger=Math.max(0,hunger-.12);happy=Math.max(0,happy-.07);updateStats()},4000);
+updateStats();
+</script>
+</body></html>

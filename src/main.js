@@ -190,6 +190,9 @@ for (let i = 0; i < 34; i++) {
   tuft.rotation.z = i % 2 ? 0.2 : -0.2;
 }
 
+// Shrink the complete island model to half its previous world-space dimensions.
+island.scale.setScalar(0.5);
+
 // Puffy voxel clouds drift slowly in the pastel sky.
 function makeCloud(x, y, z, s) {
   const c = group(scene, x, y, z);
@@ -201,7 +204,7 @@ function makeCloud(x, y, z, s) {
 const clouds = [makeCloud(-9, 6.5, -5, 1.1), makeCloud(8, 7.2, 1, 0.85), makeCloud(-6, 5.8, 7, 0.72)];
 
 // White voxel kitten with pointed ears, pink nose and tiny paws.
-const pet = group(scene, 0.25, 0.23, 2.7);
+const pet = group(scene, 0.125, 0.23, 1.35);
 pet.rotation.y = Math.PI;
 const p=(x,y,z,sx,sy,sz,m)=>block(pet,x,y,z,sx,sy,sz,m);
 p(0,.48,0,.9,.7,.78,M.petLight);
@@ -244,7 +247,7 @@ marker.add(markerDot);
 
 // Invisible walkable plane, clipped to the meadow's diamond silhouette.
 const walkPlane = new THREE.Mesh(new THREE.PlaneGeometry(13.8, 9.6), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
-walkPlane.rotation.x = -Math.PI / 2; walkPlane.position.set(0.75, 0.205, -0.15); scene.add(walkPlane);
+walkPlane.rotation.x = -Math.PI / 2; walkPlane.position.set(0.375, 0.1025, -0.075); walkPlane.scale.setScalar(0.5); scene.add(walkPlane);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -269,13 +272,13 @@ function updateStats() {
   $('mood-tag').textContent = hunger < 25 ? '♡ A little hungry' : happiness > 75 ? '♡ Feeling cozy' : '♡ Wants to play';
 }
 function movePet(x, z) {
-  target = new THREE.Vector3(THREE.MathUtils.clamp(x, -5.7, 7.5), 0.23, THREE.MathUtils.clamp(z, -4.5, 4.5));
+  target = new THREE.Vector3(THREE.MathUtils.clamp(x, -2.9, 3.7), 0.23, THREE.MathUtils.clamp(z, -2.35, 2.2));
   $('scene-tip').textContent = '🐾 Mochi is on the move!';
 }
 function chooseWalkPoint() {
   const options = islandCells.filter(([x, z]) => Math.abs(x) + Math.abs(z) < 7.5 && !(x < -1 && x > -4 && z < -1 && z > -3));
   const [x, z] = options[Math.floor(Math.random() * options.length)];
-  movePet(x, z);
+  movePet(x * 0.5, z * 0.5);
 }
 function feed() {
   if (apples <= 0) { say('No more apples — let’s find some!'); return; }
@@ -349,7 +352,7 @@ canvas.addEventListener('pointerdown', (event) => {
   const hit = raycaster.intersectObject(walkPlane)[0];
   if (!hit) return;
   const { x, z } = hit.point;
-  if (x < -6.15 || x > 7.65 || z < -4.95 || z > 4.65) return;
+  if (x < -3.08 || x > 3.83 || z < -2.48 || z > 2.33) return;
   movePet(x, z);
 });
 canvas.addEventListener('pointermove', (event) => {

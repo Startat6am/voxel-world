@@ -357,10 +357,13 @@
     "status": "user-observed width; approximate depth pending visual confirmation",
     "left_edge_to_center_voxels": 20,
     "center_to_right_edge_voxels": 26,
-    "total_width_voxels": 46,
-    "approximate_depth_voxels": 32,
+    "total_width_voxels": 23,
+    "original_grid_width_voxels": 46,
+    "approximate_depth_voxels": 16,
+    "original_approximate_depth_voxels": 32,
     "rear_corner": "asymmetric stepped cut at rear-left corner (provisional orientation)",
-    "voxel_world_size": 0.3,
-    "note": "Width counts supplied by user. Depth 32 and exact notch contour are provisional implementation assumptions, not pixel-verified counts."
+    "voxel_world_size": 0.15,
+    "original_voxel_world_size": 0.3,
+    "note": "Displayed island model is scaled to 50% of its former world-space dimensions. Original grid estimate was 46 × 32 at 0.30 units per voxel; effective footprint is approximately 23 × 16 at 0.15 units per voxel. Width counts supplied by user; depth and exact notch contour remain provisional."
   }
 }

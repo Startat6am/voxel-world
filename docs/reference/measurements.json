@@ -355,7 +355,7 @@
   ],
   "voxel_grid_estimate": {
     "status": "user-observed width; approximate depth pending visual confirmation",
-    "left_edge_to_center_voxels": 20,
+    "left_edge_to_center_voxels": 10,
     "center_to_right_edge_voxels": 26,
     "total_width_voxels": 23,
     "original_grid_width_voxels": 46,

@@ -198,7 +198,7 @@ const markerDot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THRE
 marker.add(markerDot);
 
 // Invisible walkable plane, clipped to the meadow's diamond silhouette.
-const walkPlane = new THREE.Mesh(new THREE.PlaneGeometry(12.5, 12.5), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
+const walkPlane = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }));
 walkPlane.rotation.x = -Math.PI / 2; walkPlane.position.y = 0.205; scene.add(walkPlane);
 
 const raycaster = new THREE.Raycaster();
@@ -286,7 +286,7 @@ function resize() {
   const width = canvas.clientWidth, height = canvas.clientHeight;
   if (!width || !height) return;
   renderer.setSize(width, height, false);
-  const aspect = width / height, halfH = 8.25;
+  const aspect = width / height, halfH = 9.4;
   camera.left = -halfH * aspect; camera.right = halfH * aspect;
   camera.top = halfH; camera.bottom = -halfH;
   camera.updateProjectionMatrix();
@@ -301,7 +301,7 @@ function animate(now) {
   const dt = Math.min((now - last) / 1000 || 0, 0.04);
   last = now; elapsed += dt; idleTimer += dt;
 
-  clouds.forEach((cloud, i) => {
+  fish.position.y = 2.05 + Math.sin(elapsed * 2.1) * 0.12;\n  fish.rotation.y = Math.sin(elapsed * 1.2) * 0.08;\n\n  clouds.forEach((cloud, i) => {
     cloud.position.x += dt * (i === 1 ? -0.075 : 0.045);
     if (cloud.position.x > 13) cloud.position.x = -13;
     if (cloud.position.x < -13) cloud.position.x = 13;

@@ -60,27 +60,38 @@ function group(parent = scene, x = 0, y = 0, z = 0) {
   return g;
 }
 
-// Square floating grass island with a clean voxel-cut soil edge.
+// Reference island: broad square voxel meadow with a stepped, irregular perimeter
+// and a compact floating dirt underside. Keep the footprint data-driven.
 const island = group();
 const islandCells = [];
+const edgeNotches = new Set([
+  "-7,-7","7,-7","-7,7","7,7",
+  "-7,-6","-6,-7","7,6","6,7",
+  "-7,6","-6,7","7,-6","6,-7"
+]);
 for (let x = -7; x <= 7; x++) {
   for (let z = -7; z <= 7; z++) {
-    const edge = Math.max(Math.abs(x), Math.abs(z)) > 5;
+    if (edgeNotches.has(`${x},${z}`)) continue;
     islandCells.push([x,z]);
-    block(island, x, -0.02, z, 1, 0.42, 1, edge ? M.grassDark : M.grass);
-    block(island, x, -0.43, z, 1, 0.43, 1, (x+z)%4===0 ? M.soilDark : M.soil);
+    const edge = Math.max(Math.abs(x), Math.abs(z)) >= 6;
+    const topMat = ((x * 3 + z * 5) % 11 === 0) ? M.grassLight : (edge ? M.grassDark : M.grass);
+    block(island, x, -0.02, z, 1, 0.42, 1, topMat);
+    // Continuous brown soil body directly beneath the grass cap.
+    const soilMat = ((x * 7 + z * 3) % 5 === 0) ? M.soilDark : M.soil;
+    block(island, x, -0.43, z, 1, 0.43, 1, soilMat);
   }
 }
-// Chunky underside silhouette, visible below the square platform.
-for (let x=-5; x<=5; x++) for (let z=-5; z<=5; z++) {
-  if (Math.abs(x)+Math.abs(z)>8 && (x*z)%2!==0) continue;
-  if ((x*7+z*11)%3===0) block(island,x,-0.88,z,0.9,0.48,0.9,M.soilDark);
+// Broken, stepped chunks under the front and side edges create the floating-island silhouette.
+for (let x = -6; x <= 6; x++) {
+  for (let z = -6; z <= 6; z++) {
+    const perimeter = Math.max(Math.abs(x), Math.abs(z));
+    if (perimeter < 4) continue;
+    const hash = Math.abs((x * 17 + z * 29 + x * z * 3) % 7);
+    if (hash < 3) continue;
+    const depth = hash === 6 ? 1.18 : 0.88;
+    block(island, x + (hash % 2 ? 0.04 : -0.04), -0.78 - depth * 0.18, z, 0.88, depth, 0.88, hash % 2 ? M.soilDark : M.soilShade);
+  }
 }
-// Small turquoise pond in the back-center, edged with pale stone blocks.
-const pond = group(island, -0.25, 0.205, -2.2);
-block(pond,0,0,0,2.5,0.055,1.75,M.water,false);
-block(pond,-0.2,0.035,-0.08,1.45,0.018,0.9,M.waterLight,false);
-[[-1.45,-.55],[-1.1,.65],[-.35,.95],[.65,.8],[1.3,.35],[1.2,-.55],[.45,-.9],[-.65,-.9]].forEach(([x,z],i)=>block(pond,x,.08,z,.48,.18,.42,i%2?M.stone:M.stoneLight));
 // Rounded apple tree with a thick trunk and a stepped spherical canopy.
 function makeTree(x,z,scale=1) {
  const t=group(island,x,0,z);

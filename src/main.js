@@ -4,24 +4,24 @@ import './style.css';
 const $ = (id) => document.getElementById(id);
 const canvas = $('world');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#b9dfe7');
-scene.fog = new THREE.Fog('#b9dfe7', 20, 43);
+scene.background = new THREE.Color('#a9d5e5');
+scene.fog = new THREE.Fog('#a9d5e5', 25, 52);
 
 const camera = new THREE.OrthographicCamera(-10, 10, 8, -8, 0.1, 100);
-const homePosition = new THREE.Vector3(12, 15, 12);
+const homePosition = new THREE.Vector3(14, 12.5, 14);
 camera.position.copy(homePosition);
-camera.lookAt(0, 0.5, 0);
+camera.lookAt(0, 0.25, 0);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.08;
 
-scene.add(new THREE.HemisphereLight(0xe9fff0, 0x80644c, 2.1));
-const sun = new THREE.DirectionalLight(0xfff1d8, 3.2);
+scene.add(new THREE.HemisphereLight(0xe5fff0, 0x65432f, 1.65));
+const sun = new THREE.DirectionalLight(0xffe5bd, 2.45);
 sun.position.set(-8, 15, 9);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -31,12 +31,12 @@ scene.add(sun);
 
 const material = (color, roughness = 1) => new THREE.MeshStandardMaterial({ color, roughness });
 const M = {
-  grass: material('#8bcf70'), grassLight: material('#a7df83'), grassDark: material('#6ab45d'),
-  soil: material('#a47750'), soilDark: material('#805638'), soilShade: material('#684b38'),
+  grass: material('#70c653'), grassLight: material('#9be36f'), grassDark: material('#4f9f43'),
+  soil: material('#a96d43'), soilDark: material('#80502f'), soilShade: material('#573b2d'),
   bark: material('#986440'), barkLight: material('#b77b4c'),
-  leaf: material('#469c59'), leafLight: material('#65b96a'), leafDark: material('#347e4b'),
+  leaf: material('#27864a'), leafLight: material('#54b85b'), leafDark: material('#1d653a'),
   stone: material('#9baaa2'), stoneLight: material('#c4cec3'),
-  water: material('#73c9d0', 0.3), waterLight: material('#a5e1dc', 0.3),
+  water: material('#43b6c6', 0.3), waterLight: material('#8cddd5', 0.3),
   pink: material('#f49cbe'), yellow: material('#ffe08b'), cream: material('#fff2d8'),
   pet: material('#e8a45f'), petLight: material('#f4c68e'), petDark: material('#bd7548'),
   nose: material('#493d39'), blush: material('#e98f8c')
@@ -315,7 +315,7 @@ function animate(now) {
   if (cameraTween > 0) {
     cameraTween = Math.max(0, cameraTween - dt * 1.8);
     camera.position.lerp(homePosition, dt * 2.8);
-    camera.lookAt(0, 0.5, 0);
+    camera.lookAt(0, 0.25, 0);
   }
 
   const playing = elapsed < (pet.userData.playUntil || 0);

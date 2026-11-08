@@ -129,7 +129,13 @@ block(house,1.05,4.25,-.25,.55,.9,.55,material('#9a5728'));
 for(let i=0;i<3;i++) block(house,1.05,4.85+i*.27,-.25,.23,.22,.23,M.cream);
 for(let i=0;i<5;i++) block(house,1.0+i*.48,.55,1.95,.25,.8,.25,material('#bd9565'));
 block(house,1.95,.8,1.95,1.9,.16,.18,material('#bd9565'));
-// A little pale stepping-stone path leads from the cottage door to the kitten.\nblock(island,2.6,.205,0.25,.72,.035,.58,material('#d8bd91'),false);\nblock(island,2.05,.205,1,.72,.035,.58,material('#d8bd91'),false);\nblock(island,1.5,.205,1.75,.72,.035,.58,material('#d8bd91'),false);\nblock(island,0.95,.205,2.5,.72,.035,.58,material('#d8bd91'),false);\nblock(island,0.3999999999999999,.205,3.25,.72,.035,.58,material('#d8bd91'),false);\n// Tiny voxel flowers and individual grass tufts.
+// A little pale stepping-stone path leads from the cottage door to the kitten.
+block(island,2.6,.205,0.25,.72,.035,.58,material('#d8bd91'),false);
+block(island,2.05,.205,1,.72,.035,.58,material('#d8bd91'),false);
+block(island,1.5,.205,1.75,.72,.035,.58,material('#d8bd91'),false);
+block(island,0.95,.205,2.5,.72,.035,.58,material('#d8bd91'),false);
+block(island,0.3999999999999999,.205,3.25,.72,.035,.58,material('#d8bd91'),false);
+// Tiny voxel flowers and individual grass tufts.
 function makeFlower(x, z, petalMat) {
   const f = group(island, x, 0, z);
   block(f, 0, 0.34, 0, 0.075, 0.45, 0.075, M.leafDark);
@@ -158,7 +164,8 @@ function makeCloud(x, y, z, s) {
 const clouds = [makeCloud(-9, 6.5, -5, 1.1), makeCloud(8, 7.2, 1, 0.85), makeCloud(-6, 5.8, 7, 0.72)];
 
 // White voxel kitten with pointed ears, pink nose and tiny paws.
-const pet = group(scene, 0.25, 0.23, 2.7);\npet.rotation.y = Math.PI;
+const pet = group(scene, 0.25, 0.23, 2.7);
+pet.rotation.y = Math.PI;
 const p=(x,y,z,sx,sy,sz,m)=>block(pet,x,y,z,sx,sy,sz,m);
 p(0,.48,0,.9,.7,.78,M.petLight);
 p(0,1.12,-.28,.9,.82,.72,M.petLight);
@@ -184,7 +191,8 @@ const petShadow = new THREE.Mesh(new THREE.CircleGeometry(0.72, 24), new THREE.M
 petShadow.rotation.x = -Math.PI / 2; petShadow.position.y = 0.025; pet.add(petShadow);
 
 // A little golden voxel fish hovering between the tree and cottage.
-const fish=group(scene,.25,2.05,-.15);\nfish.rotation.y = Math.PI;
+const fish=group(scene,.25,2.05,-.15);
+fish.rotation.y = Math.PI;
 const fishGold=material('#ffb51e'), fishLight=material('#ffd34c'), fishOrange=material('#f28b16');
 block(fish,0,0,0,.95,.62,.5,fishGold);
 block(fish,-.53,.02,0,.42,.48,.42,fishLight);
@@ -301,7 +309,10 @@ function animate(now) {
   const dt = Math.min((now - last) / 1000 || 0, 0.04);
   last = now; elapsed += dt; idleTimer += dt;
 
-  fish.position.y = 2.05 + Math.sin(elapsed * 2.1) * 0.12;\n  fish.rotation.y = Math.sin(elapsed * 1.2) * 0.08;\n\n  clouds.forEach((cloud, i) => {
+  fish.position.y = 2.05 + Math.sin(elapsed * 2.1) * 0.12;
+  fish.rotation.y = Math.sin(elapsed * 1.2) * 0.08;
+
+  clouds.forEach((cloud, i) => {
     cloud.position.x += dt * (i === 1 ? -0.075 : 0.045);
     if (cloud.position.x > 13) cloud.position.x = -13;
     if (cloud.position.x < -13) cloud.position.x = 13;

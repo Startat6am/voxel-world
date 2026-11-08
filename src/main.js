@@ -9,8 +9,9 @@ scene.fog = new THREE.Fog('#78c2fb', 52, 90);
 
 const camera = new THREE.OrthographicCamera(-10, 10, 8, -8, 0.1, 100);
 const homePosition = new THREE.Vector3(13, 7.8, 13);
+const cameraFocus = new THREE.Vector3(0, 0.25, 0);
 camera.position.copy(homePosition);
-camera.lookAt(0, 0.25, 0);
+camera.lookAt(cameraFocus);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -250,6 +251,8 @@ const pointer = new THREE.Vector2();
 let target = null, elapsed = 0, walkTime = 0, foodObject = null, foodAge = 0;
 let hunger = 78, happiness = 92, apples = 5, selectedSnack = 'apple';
 let toastTimer = 0, idleTimer = 0, cameraTween = 0, soundOn = false;
+let cameraDragEnabled = false, petClickEnabled = true, activeCameraPointer = null;
+const cameraDragStart = { x: 0, y: 0 };
 
 function say(message) {
   const bubble = $('bubble');
@@ -304,6 +307,21 @@ $('feed').addEventListener('click', feed);
 $('play').addEventListener('click', play);
 $('pet').addEventListener('click', cuddle);
 $('camera-home').addEventListener('click', () => { cameraTween = 1; say('A lovely view of your island'); });
+const cameraModeButton = $('camera-pan-mode');
+const petModeButton = $('pet-click-mode');
+function setInteractionMode(mode) {
+  cameraDragEnabled = mode === 'camera';
+  petClickEnabled = mode === 'pet';
+  cameraModeButton.classList.toggle('active', cameraDragEnabled);
+  petModeButton.classList.toggle('active', petClickEnabled);
+  cameraModeButton.setAttribute('aria-pressed', String(cameraDragEnabled));
+  petModeButton.setAttribute('aria-pressed', String(petClickEnabled));
+  canvas.style.cursor = cameraDragEnabled ? 'grab' : 'crosshair';
+  $('scene-tip').textContent = cameraDragEnabled ? '✥ Drag to move the camera' : '🐾 Tap the island to move Mochi';
+}
+cameraModeButton.addEventListener('click', () => setInteractionMode(cameraDragEnabled ? 'pet' : 'camera'));
+petModeButton.addEventListener('click', () => setInteractionMode(petClickEnabled ? 'camera' : 'pet'));
+setInteractionMode('pet');
 $('fullscreen').addEventListener('click', () => {
   const wrap = $('scene-wrap');
   if (!document.fullscreenElement) wrap.requestFullscreen?.();
@@ -315,6 +333,15 @@ $('sound-toggle').addEventListener('click', () => {
   say(soundOn ? 'A little birdsong would be lovely' : 'Quiet time 🌿');
 });
 canvas.addEventListener('pointerdown', (event) => {
+  if (cameraDragEnabled) {
+    activeCameraPointer = event.pointerId;
+    cameraDragStart.x = event.clientX;
+    cameraDragStart.y = event.clientY;
+    canvas.setPointerCapture(event.pointerId);
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+  if (!petClickEnabled) return;
   const rect = canvas.getBoundingClientRect();
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -325,6 +352,28 @@ canvas.addEventListener('pointerdown', (event) => {
   if (x < -6.15 || x > 7.65 || z < -4.95 || z > 4.65) return;
   movePet(x, z);
 });
+canvas.addEventListener('pointermove', (event) => {
+  if (activeCameraPointer !== event.pointerId) return;
+  const dx = event.clientX - cameraDragStart.x;
+  const dy = event.clientY - cameraDragStart.y;
+  cameraDragStart.x = event.clientX;
+  cameraDragStart.y = event.clientY;
+  const worldPerPixel = (camera.top - camera.bottom) / Math.max(canvas.clientHeight, 1);
+  const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+  const forward = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 2);
+  right.y = 0; forward.y = 0; right.normalize(); forward.normalize();
+  const shift = right.multiplyScalar(-dx * worldPerPixel).add(forward.multiplyScalar(dy * worldPerPixel));
+  camera.position.add(shift);
+  cameraFocus.add(shift);
+  camera.lookAt(cameraFocus);
+});
+function finishCameraDrag(event) {
+  if (activeCameraPointer !== event.pointerId) return;
+  activeCameraPointer = null;
+  canvas.style.cursor = cameraDragEnabled ? 'grab' : 'crosshair';
+}
+canvas.addEventListener('pointerup', finishCameraDrag);
+canvas.addEventListener('pointercancel', finishCameraDrag);
 
 function resize() {
   const width = canvas.clientWidth, height = canvas.clientHeight;
@@ -339,11 +388,19 @@ const observer = new ResizeObserver(resize);
 observer.observe(canvas);
 resize();
 
-let last = 0;
+let last = 0, fpsFrames = 0, fpsElapsed = 0;
+const fpsLabel = $('fps-counter');
 function animate(now) {
   requestAnimationFrame(animate);
   const dt = Math.min((now - last) / 1000 || 0, 0.04);
   last = now; elapsed += dt; idleTimer += dt;
+  fpsFrames++; fpsElapsed += dt;
+  if (fpsElapsed >= 0.5) {
+    const fps = Math.round(fpsFrames / fpsElapsed);
+    fpsLabel.textContent = `FPS ${fps}`;
+    fpsLabel.classList.toggle('low', fps < 30);
+    fpsFrames = 0; fpsElapsed = 0;
+  }
 
   fish.position.y = 2.05 + Math.sin(elapsed * 2.1) * 0.12;
   fish.rotation.y = Math.sin(elapsed * 1.2) * 0.08;
@@ -357,7 +414,8 @@ function animate(now) {
   if (cameraTween > 0) {
     cameraTween = Math.max(0, cameraTween - dt * 1.8);
     camera.position.lerp(homePosition, dt * 2.8);
-    camera.lookAt(0, 0.25, 0);
+    cameraFocus.lerp(new THREE.Vector3(0, 0.25, 0), dt * 2.8);
+    camera.lookAt(cameraFocus);
   }
 
   const playing = elapsed < (pet.userData.playUntil || 0);

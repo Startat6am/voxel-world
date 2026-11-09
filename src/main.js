@@ -444,7 +444,7 @@ function animate(now) {
     if (distance > 0.09) {
       pet.position.x += dx / distance * dt * 2.65;
       pet.position.z += dz / distance * dt * 2.65;
-      pet.rotation.y = Math.atan2(dx, dz);
+      pet.rotation.y = Math.atan2(dx, dz) + Math.PI;
       walkTime += dt;
       pet.position.y = 0.23 + Math.abs(Math.sin(walkTime * 12)) * 0.11;
       legs.forEach((leg, i) => { leg.rotation.x = Math.sin(walkTime * 12 + (i % 2) * Math.PI) * 0.42; });
